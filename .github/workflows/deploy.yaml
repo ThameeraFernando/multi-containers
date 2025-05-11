@@ -1,0 +1,23 @@
+name: Deploy MultiDocker
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      - run: docker build -t thameerasithnuwan/multi-tests -f ./client/Dockerfile.dev ./client
+      - run: docker run -e CI=true thameerasithnuwan/multi-tests npm test
+      - run: docker build -t thameerasithnuwan/multi-client ./client
+      - run: docker build -t thameerasithnuwan/multi-nginx ./nginx
+      - run: docker build -t thameerasithnuwan/multi-server ./server
+      - run: docker build -t thameerasithnuwan/multi-worker ./worker
+
+      - run: docker push thameerasithnuwan/multi-client
+      - run: docker push thameerasithnuwan/multi-nginx
+      - run: docker push thameerasithnuwan/multi-server
+      - run: docker push thameerasithnuwan/multi-worker
